@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>衣橱穿搭助手</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Toast 通知容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ========== 应用容器 ========== -->
+  <div id="app">
+
+    <!-- 顶部标题栏 -->
+    <header class="app-header" id="appHeader">
+      <h1 class="header-title" id="headerTitle">穿搭灵感</h1>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="app-main" id="appMain">
+
+      <!-- Tab 1: 穿搭灵感 -->
+      <section class="page active" id="page-outfit">
+
+        <!-- 天气加载中 -->
+        <div class="weather-loading" id="weatherLoading">
+          <span class="weather-spinner"></span>
+          <p class="weather-loading-text">正在获取天气...</p>
+        </div>
+
+        <!-- 天气卡片 -->
+        <div class="weather-card" id="weatherCard" style="display:none">
+          <div class="weather-card-top">
+            <span class="weather-icon" id="weatherIcon">☀️</span>
+            <span class="weather-temp" id="weatherTemp">--°C</span>
+          </div>
+          <p class="weather-desc" id="weatherDesc">--</p>
+          <div class="weather-card-bottom">
+            <span class="weather-location" id="weatherLocation">--</span>
+            <button class="weather-refresh" id="weatherRefresh" title="刷新天气">🔄</button>
+          </div>
+        </div>
+
+        <!-- 天气获取失败 / 手动输入 -->
+        <div class="weather-error" id="weatherError" style="display:none">
+          <span class="weather-error-icon">⚠️</span>
+          <p class="weather-error-msg">定位失败</p>
+          <div class="weather-city-search">
+            <input type="text" class="form-input" id="weatherCityInput" placeholder="输入城市名称，例如：北京" maxlength="30">
+            <button class="btn-save" id="weatherCityBtn" style="height:44px;font-size:14px;">查询</button>
+          </div>
+        </div>
+
+        <!-- 风格选择器 -->
+        <div class="outfit-section" id="outfitSection">
+          <label class="form-label">穿搭风格</label>
+          <div class="style-selector" id="styleSelector">
+            <button class="style-chip" data-style="commute">💼 通勤</button>
+            <button class="style-chip" data-style="casual">👕 休闲</button>
+            <button class="style-chip" data-style="elegant">✨ 精致</button>
+          </div>
+
+          <!-- 生成按钮 -->
+          <button class="btn-generate" id="btnGenerate">✨ 生成穿搭</button>
+
+          <!-- 初始提示 -->
+          <div class="outfit-empty-hint" id="outfitEmptyHint">
+            <p>添加衣物并获取天气后，点击上方按钮生成穿搭建议</p>
+          </div>
+
+          <!-- 穿搭结果 -->
+          <div class="outfit-result" id="outfitResult">
+            <!-- JS动态渲染 -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Tab 2: 我的衣橱 -->
+      <section class="page" id="page-wardrobe">
+        <!-- 分类筛选栏 -->
+        <div class="filter-bar" id="filterBar">
+          <button class="filter-chip active" data-filter="all">全部</button>
+          <button class="filter-chip" data-filter="top-outer">上衣+外套</button>
+          <button class="filter-chip" data-filter="bottom">下装</button>
+          <button class="filter-chip" data-filter="dress">连衣裙</button>
+          <button class="filter-chip" data-filter="shoes-acc">鞋子+配饰</button>
+        </div>
+        <!-- 衣物网格容器 -->
+        <div class="wardrobe-grid" id="wardrobeGrid">
+          <!-- JS动态渲染衣物卡片 -->
+        </div>
+        <!-- 空衣橱提示 -->
+        <div class="wardrobe-empty" id="wardrobeEmpty">
+          <div class="placeholder-icon">👗</div>
+          <p class="placeholder-text">衣橱还是空的</p>
+          <p class="placeholder-hint">点击右下角 + 添加你的第一件衣物</p>
+        </div>
+        <!-- 浮动添加按钮 -->
+        <button class="fab" id="fabAdd" title="添加衣物">+</button>
+      </section>
+
+      <!-- Tab 3: 个人中心 -->
+      <section class="page" id="page-profile">
+
+        <!-- 偏好设置 -->
+        <div class="profile-section">
+          <h3 class="profile-section-title">偏好设置</h3>
+
+          <div class="profile-card">
+            <label class="form-label">默认穿搭风格</label>
+            <p class="form-sublabel">穿搭灵感页将默认选中此风格</p>
+            <div class="style-selector" id="profileStyleSelector">
+              <button class="style-chip" data-style="commute">💼 通勤</button>
+              <button class="style-chip" data-style="casual">👕 休闲</button>
+              <button class="style-chip" data-style="elegant">✨ 精致</button>
+            </div>
+          </div>
+
+          <div class="profile-card">
+            <label class="form-label">温度单位</label>
+            <div class="unit-toggle" id="unitToggle">
+              <button class="unit-option active" data-unit="celsius">°C 摄氏度</button>
+              <button class="unit-option" data-unit="fahrenheit">°F 华氏度</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div class="profile-section">
+          <h3 class="profile-section-title">数据管理</h3>
+
+          <div class="profile-card">
+            <div class="profile-row">
+              <div>
+                <span class="profile-row-title">导出数据</span>
+                <p class="profile-row-desc">将所有衣物和设置备份为JSON文件</p>
+              </div>
+              <button class="btn-outline" id="btnExport">📤 导出</button>
+            </div>
+          </div>
+
+          <div class="profile-card">
+            <div class="profile-row">
+              <div>
+                <span class="profile-row-title">导入数据</span>
+                <p class="profile-row-desc">从备份文件恢复数据（将覆盖现有数据）</p>
+              </div>
+              <button class="btn-outline" id="btnImport">📥 导入</button>
+              <input type="file" accept=".json" id="importFileInput" hidden>
+            </div>
+          </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="profile-section">
+          <h3 class="profile-section-title">使用说明</h3>
+          <div class="profile-card profile-help">
+            <ol class="help-list">
+              <li>在「我的衣橱」中添加衣物，上传照片并填写信息</li>
+              <li>在「穿搭灵感」中允许获取位置，查看实时天气</li>
+              <li>选择偏好的穿搭风格，点击生成穿搭建议</li>
+              <li>对不满意的单品可点击 🔄 换一换</li>
+              <li>定期使用「导出数据」备份衣橱，更换设备时可导入恢复</li>
+            </ol>
+            <p class="help-note">💡 所有数据仅存储在您的浏览器中，不会上传到任何服务器。</p>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- 底部导航栏 -->
+    <nav class="tab-nav" id="tabNav">
+      <button class="tab-btn active" data-tab="outfit">
+        <span class="tab-icon">✨</span>
+        <span class="tab-label">穿搭灵感</span>
+      </button>
+      <button class="tab-btn" data-tab="wardrobe">
+        <span class="tab-icon">👗</span>
+        <span class="tab-label">我的衣橱</span>
+      </button>
+      <button class="tab-btn" data-tab="profile">
+        <span class="tab-icon">👤</span>
+        <span class="tab-label">个人中心</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ========== 添加/编辑衣物弹窗 ========== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card" id="modalCard">
+
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">添加衣物</h2>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 照片上传 -->
+        <div class="form-group">
+          <label class="form-label">照片</label>
+          <div class="photo-upload" id="photoUpload">
+            <input type="file" accept="image/*" id="photoInput" hidden capture="environment">
+            <div class="photo-preview" id="photoPreview">
+              <span class="photo-placeholder-icon">📷</span>
+              <span class="photo-placeholder-text">点击上传照片</span>
+            </div>
+            <canvas id="photoCanvas" hidden></canvas>
+          </div>
+        </div>
+
+        <!-- 名称 -->
+        <div class="form-group">
+          <label class="form-label">名称 <span class="required">*</span></label>
+          <input type="text" class="form-input" id="inputName" placeholder="例如：白色纯棉T恤" maxlength="30">
+        </div>
+
+        <!-- 分类 -->
+        <div class="form-group">
+          <label class="form-label">分类 <span class="required">*</span></label>
+          <select class="form-select" id="inputCategory">
+            <option value="">请选择分类</option>
+            <option value="top-outer">上衣 + 外套</option>
+            <option value="bottom">下装</option>
+            <option value="dress">连衣裙 / 连体衣</option>
+            <option value="shoes-acc">鞋子 + 配饰</option>
+          </select>
+        </div>
+
+        <!-- 颜色 -->
+        <div class="form-group">
+          <label class="form-label">颜色</label>
+          <input type="text" class="form-input" id="inputColor" placeholder="例如：黑色、蓝色" maxlength="20">
+        </div>
+
+        <!-- 保暖度 -->
+        <div class="form-group">
+          <label class="form-label">保暖度 <span class="required">*</span></label>
+          <div class="radio-group" id="radioWarmth">
+            <label class="radio-tag"><input type="radio" name="warmth" value="thin"> 薄款</label>
+            <label class="radio-tag"><input type="radio" name="warmth" value="medium"> 适中</label>
+            <label class="radio-tag"><input type="radio" name="warmth" value="thick"> 厚款</label>
+            <label class="radio-tag"><input type="radio" name="warmth" value="extra-thick"> 加厚</label>
+          </div>
+        </div>
+
+        <!-- 风格标签（多选） -->
+        <div class="form-group">
+          <label class="form-label">风格标签 <span class="required">*</span></label>
+          <div class="tag-group" id="tagStyle">
+            <button class="tag-chip" data-value="commute">通勤</button>
+            <button class="tag-chip" data-value="casual">休闲</button>
+            <button class="tag-chip" data-value="elegant">精致</button>
+          </div>
+        </div>
+
+        <!-- 适合季节（多选） -->
+        <div class="form-group">
+          <label class="form-label">适合季节</label>
+          <div class="tag-group" id="tagSeason">
+            <button class="tag-chip" data-value="spring">春</button>
+            <button class="tag-chip" data-value="summer">夏</button>
+            <button class="tag-chip" data-value="autumn">秋</button>
+            <button class="tag-chip" data-value="winter">冬</button>
+          </div>
+        </div>
+
+        <!-- 隐藏字段：编辑时存id -->
+        <input type="hidden" id="inputEditId" value="">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-delete" id="btnDelete" style="display:none">删除</button>
+        <button class="btn-save" id="btnSave">保存</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== JavaScript ========== -->
+  <script src="js/dexie.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/wardrobe.js"></script>
+  <script src="js/outfit.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
